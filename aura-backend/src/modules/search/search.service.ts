@@ -29,7 +29,7 @@ export class SearchService {
     const searchKey = keyword.toLowerCase().trim();
     const likeParam = `%${searchKey}%`;
 
-    // 🚀 ยิง Query ค้นหาขนานพร้อมกัน 8 ระบบ (ตรวจสอบทั้งรหัสใน username และชื่อใน name คอลัมน์)
+    // 🚀 ยิง Query ขนานพร้อมกัน 8 ระบบหลัก อิงคอลัมน์ตาม Schema จริงที่โฟมให้มา
     const [
       airaResult,
       atsResult,
@@ -40,12 +40,10 @@ export class SearchService {
       preconfirmResult,
       tfexResult,
     ] = await Promise.all([
-      
       // 1. AIRA
       this.airaPrisma.$queryRaw<any[]>`
         SELECT Username, IsAdmin FROM [Admin] 
-        WHERE LOWER(Username) = ${searchKey}
-           OR LOWER(Username) LIKE ${likeParam}
+        WHERE LOWER(Username) LIKE ${likeParam}
       `
         .then((res) =>
           res.length > 0
@@ -56,11 +54,19 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: {},
               }))
-            : [{ system: 'AIRA', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'AIRA',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('AIRA', e, keyword)),
 
-      // 2. ATSRequest (🌟 ซ่อมแซม: ค้นหาตรวจสอบทั้งช่องเลขรหัส และช่อง name)
+      // 2. ATSRequest (แมปตรงฟิลด์ username และ name ตามดาต้าจริง เช่น Raphatphorn, 3197)
       this.atsPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, is_active FROM [users] 
         WHERE LOWER(username) LIKE ${likeParam}
@@ -75,11 +81,19 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [{ system: 'ATSRequest', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'ATSRequest',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('ATSRequest', e, keyword)),
 
-      // 3. ForeCast (🌟 ซ่อมแซม: ดักจับทั้งรหัสพนักงาน และชื่อจริงภาษาอังกฤษอย่าง Pornsiri/Suthep)
+      // 3. ForeCast (สแกนหาจากช่อง username และช่อง name ตามดาต้าจริงของกลุ่มตัวเลขพนักงาน)
       this.forecastPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, user_group, is_active FROM [tbl_user] 
         WHERE LOWER(username) LIKE ${likeParam}
@@ -94,11 +108,19 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, department: u.user_group },
               }))
-            : [{ system: 'ForeCast', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'ForeCast',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('ForeCast', e, keyword)),
 
-      // 4. GlobalTrade (🌟 ซ่อมแซม: ส่องหาทั้งรหัส และชื่อภาษาอังกฤษ Ubonwan/Sirinthorn)
+      // 4. GlobalTrade (แมปเช็กผ่านช่อง username และ name ภาษาอังกฤษตรงปก)
       this.gtPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize FROM [users] 
         WHERE LOWER(username) LIKE ${likeParam}
@@ -113,15 +135,22 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: { fullName: u.name, department: 'N/A' },
               }))
-            : [{ system: 'GlobalTrade', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'GlobalTrade',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('GlobalTrade', e, keyword)),
 
-      // 5. IPO Plus (🌟 ซ่อมแซม: ค้นหาควบทั้งรหัสตัวเลขพนักงาน และช่องคอลัมน์ name)
+      // 5. IPO Plus (แมปค้นหาจากฟิลด์ username และ name จากอาร์เรย์ 88 แถวในเบสจริง)
       this.ipoPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, project_access, is_active FROM [users] 
-        WHERE LOWER(username) = ${searchKey}
-           OR LOWER(username) LIKE ${likeParam}
+        WHERE LOWER(username) LIKE ${likeParam}
            OR LOWER(name) LIKE ${likeParam}
       `
         .then((res) =>
@@ -133,14 +162,22 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, projectGroup: u.project_access },
               }))
-            : [{ system: 'IPO Plus', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'IPO Plus',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
 
-      // 6. MTC
+      // 6. MTC (รองรับทั้งภาษาไทยและอังกฤษตามข้อมูลจริง เช่น ศุภรัตน์, จารุกิตติ์)
       this.mtcPrisma.$queryRaw<any[]>`
         SELECT username, name, is_active FROM [users] 
-        WHERE LOWER(username) = ${searchKey}
+        WHERE LOWER(username) LIKE ${likeParam}
            OR LOWER(name) LIKE ${likeParam}
       `
         .then((res) =>
@@ -148,15 +185,26 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'MTC',
                 username: u.username,
-                role: u.username?.toUpperCase() === 'ADMIN' ? 'Admin' : 'General User',
+                role:
+                  u.username?.toUpperCase() === 'ADMIN'
+                    ? 'Admin'
+                    : 'General User',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [{ system: 'MTC', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'MTC',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('MTC', e, keyword)),
 
-      // 7. PreConfirm (🌟 ซ่อมแซม: ค้นหาอิงจากฟิลด์ username และ name ภาษาอังกฤษยาวเหยียดใน DB)
+      // 7. PreConfirm (ใช้ authoize และดักค้นหาจากช่องรหัสเลขรวมทั้ง name รายคน เช่น Suthep Keandow)
       this.preconfirmPrisma.$queryRaw<any[]>`
         SELECT username, name, authoize, user_group, active FROM [tbl_user] 
         WHERE LOWER(username) LIKE ${likeParam}
@@ -167,15 +215,24 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'PreConfirm',
                 username: u.username,
-                role: u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
+                role:
+                  u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
                 status: u.active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [{ system: 'PreConfirm', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'PreConfirm',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('PreConfirm', e, keyword)),
 
-      // 8. TfexMIS
+      // 8. TfexMIS (ดึง Absolute Path ส่องหาผ่านช่องเลข 0001-0019 และชื่อพนักงานภาษาอังกฤษตัวใหญ่)
       this.tfexPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, user_group, is_active FROM TfexMIS.dbo.users 
         WHERE LOWER(username) LIKE ${likeParam}
@@ -190,7 +247,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [{ system: 'TfexMIS', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'TfexMIS',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('TfexMIS', e, keyword)),
     ]);
@@ -218,8 +283,15 @@ export class SearchService {
     };
   }
 
-  private handleSystemError(systemName: string, error: any, fallbackKeyword: string) {
-    console.error(`🔥 [${systemName}] System is unreachable or query failed:`, error?.message || error);
+  private handleSystemError(
+    systemName: string,
+    error: any,
+    fallbackKeyword: string,
+  ) {
+    console.error(
+      `🔥 [${systemName}] System is unreachable or query failed:`,
+      error?.message || error,
+    );
     return [
       {
         system: systemName,
