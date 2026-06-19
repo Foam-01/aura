@@ -2,14 +2,14 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class AiraPrismaService
+export class PreconfirmPrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
     super({
       datasources: {
-        db: { url: process.env.AIRA_DB_URL },
+        db: { url: process.env.PRECONFIRM_DB_URL },
       },
       log: ['error'],
     });
