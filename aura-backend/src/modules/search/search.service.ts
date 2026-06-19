@@ -21,7 +21,7 @@ export class SearchService {
 
       return {
         status: 'success',
-        message: 'เชื่อมต่อแบบแยกโมดูลอิสระเสร็จสมบูรณ์ร้อยเปอร์เซ็นต์ครับโฟม!',
+        message: 'เชื่อมต่อแบบแยกโมดูลอิสระเสร็จสมบูรณ์ร้อยเปอร์เซ็นต์!',
         data: {
           centralLogs,
           airaAdmins,
