@@ -8,7 +8,7 @@ generator client {
 }
 
 // ==========================================
-// 📑 ฐานข้อมูลที่ 1: Central_User_Audit
+// 📑 ฐานข้อมูลกลาง: เก็บ Log ระบบ
 // ==========================================
 model AuditLogs {
   id           Int      @id @default(autoincrement())
@@ -20,13 +20,15 @@ model AuditLogs {
 }
 
 // ==========================================
-// 📑 ฐานข้อมูลที่ 2: AIRA
+// 📑 ฐานข้อมูลกลาง: เก็บสิทธิ์ไอทีแอดมินสำหรับระบบ AURA
 // ==========================================
-model AiraAdmin {
-  ID       Int    @id @default(autoincrement()) @map("ID")
-  Username String @db.VarChar(50)
-  Password String @db.VarChar(50)
-  IsAdmin  Int    @default(0)
+model User {
+  id        Int      @id @default(autoincrement())
+  user      String   @unique @db.VarChar(50)  // เอาไว้พิมพ์ช่อง Username
+  pwd       String   @db.VarChar(255)         // เอาไว้พิมพ์ช่อง Password
+  name      String?  @db.VarChar(100)
+  level     String?  @db.VarChar(20)          // ระดับสิทธิ์ เช่น admin, staff
+  createdAt DateTime @default(now()) @db.DateTime
 
-  @@map("Admin")
+  @@map("AuraUser") // แอบผูกชื่อตารางในฐานข้อมูลว่า AuraUser จะได้เป็นสัดส่วนชัดเจนครับ
 }

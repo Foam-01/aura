@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { searchUserAcrossSystems } from './services/search.service';
-import Sidebar from './components/Sidebar'; 
+import Sidebar from './components/Sidebar';
 
 function App() {
   const [keyword, setKeyword] = useState('');
@@ -27,15 +27,15 @@ function App() {
   return (
     <div className="min-h-screen bg-[#edf4fc] text-slate-700 font-sans antialiased flex selection:bg-sky-100 selection:text-sky-600">
       
-      {/*  แสดงผลส่วน Sidebar ก้อนที่เราแยกไฟล์ออกไปแล้ว */}
+      {/* 🌟 Sidebar Component ฝั่งซ้าย */}
       <Sidebar />
 
-      {/*  Main Dashboard Panel ฝั่งขวา */}
+      {/* 🖥️ Main Dashboard Panel ฝั่งขวา */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <main className="max-w-7xl w-full mx-auto px-8 py-12">
+        <main className="w-full mx-auto px-6 py-10">
           
           {/* Search Bar Section */}
-          <div className="max-w-xl mb-12">
+          <div className="max-w-xl mb-10">
             <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-1">
               Unified Accounts Directory
             </h2>
@@ -65,9 +65,9 @@ function App() {
             </form>
           </div>
 
-          {/* Results Section Grid */}
+          {/* Results Section Grid (🌟 กลับมาใช้ 4 คอลัมน์เพื่อความกระชับกะทัดรัด) */}
           {searched && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {results.map((item, idx) => {
                 const isActive = item.status === 'ACTIVE';
                 const isOffline = item.status === 'OFFLINE';
@@ -77,8 +77,8 @@ function App() {
                 return (
                   <div 
                     key={idx} 
-                    className={`relative flex flex-col justify-between p-5 rounded-2xl bg-white border transition-all duration-200 ${
-                      isActive ? 'border-sky-100 shadow-[0_4px_16px_rgba(14,165,233,0.02)] hover:border-sky-300 shadow-sm' :
+                    className={`relative flex flex-col justify-between p-4 rounded-xl bg-white border transition-all duration-200 ${
+                      isActive ? 'border-sky-100 shadow-[0_4px_12px_rgba(14,165,233,0.02)] hover:border-sky-300 shadow-sm' :
                       isInactive ? 'border-amber-100 hover:border-amber-200 shadow-sm' :
                       isOffline ? 'border-red-100 animate-pulse' :
                       'border-slate-100/80 bg-white opacity-60'
@@ -86,7 +86,7 @@ function App() {
                   >
                     <div>
                       {/* Top System Header */}
-                      <div className="flex justify-between items-center mb-5">
+                      <div className="flex justify-between items-center mb-4">
                         <span className="font-bold text-[11px] tracking-wider text-slate-400 uppercase">
                           {item.system}
                         </span>
@@ -106,7 +106,7 @@ function App() {
                           <span className={`w-1 h-1 rounded-full ${isActive ? 'bg-sky-400' : isInactive ? 'bg-amber-400' : 'bg-slate-300'}`} />
                           ข้อมูลผู้ใช้งาน
                         </div>
-                        <p className="text-xl font-bold tracking-tight text-slate-800">
+                        <p className="text-lg font-bold tracking-tight text-slate-800 truncate">
                           {isOffline || isNotFound ? '—' : (item.details?.fullName || item.username)}
                         </p>
                         {!isOffline && !isNotFound && (

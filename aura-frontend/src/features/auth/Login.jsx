@@ -1,0 +1,152 @@
+import React, { useState } from "react";
+import Swal from "sweetalert2";
+import AuthService from "./auth.service";
+import { useNavigate } from "react-router-dom";
+
+function Login() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    if (!username || !password) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Credentials",
+        text: "กรุณาระบุข้อมูลประจำตัวเพื่อลงชื่อเข้าใช้งานระบบ",
+        confirmButtonColor: "#1e293b",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = { usr: username, pwd: password };
+      const res = await AuthService.login(payload);
+
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        navigate("/home");
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Access Denied",
+        confirmButtonColor: "#1e293b",
+        text: error.response?.data?.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex bg-[#030712] text-slate-200 antialiased" style={{ fontFamily: "'Inter', 'Sarabun', sans-serif" }}>
+      
+      {/* 🌌 ฝั่งซ้าย: Branding Panel (สไตล์คงเดิมที่ลงตัวแล้ว) */}
+      <div className="hidden lg:flex lg:w-[45%] bg-[#010409] border-r border-slate-800/60 p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px)", backgroundSize: '24px 24px' }} />
+        
+        <div className="flex items-center gap-2.5 relative z-10">
+          <div className="w-8 h-8 rounded bg-white flex items-center justify-center font-black text-black text-sm shadow-sm">
+            A
+          </div>
+          <span className="text-sm font-bold tracking-wider text-slate-100">AURA SYSTEMS</span>
+        </div>
+
+        <div className="space-y-3.5 relative z-10">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 border border-slate-800 text-slate-400 uppercase tracking-widest">
+            🛡️ Core Terminal
+          </span>
+          <h2 className="text-3xl font-black tracking-tight text-white leading-tight">
+            Centralized Accounts <br />
+            <span className="text-slate-400">& Identity Control</span>
+          </h2>
+          <p className="text-slate-400 text-xs font-medium leading-relaxed max-w-xs">
+            เทอร์มินัลกลางสำหรับตรวจสอบและสืบค้นสิทธิ์การเข้าใช้งานพนักงาน ขนานและเชื่อมต่อพร้อมกัน 8 ระบบหลักในเครือ AIRA Securities
+          </p>
+        </div>
+
+        <div className="text-[11px] font-mono text-slate-500 font-bold relative z-10 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          node_01 // SECURE CONNECTION
+        </div>
+      </div>
+
+      {/* 🔓 ฝั่งขวา: Console Form Panel (เวอร์ชันอัปเกรดขนาดฟอนต์และช่องกรอกให้อ่านง่ายขึ้นเต็มตา) */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 bg-[#030712]">
+        {/* 🌟 ขยายความกว้างสูงสุดของพื้นที่ฟอร์มเล็กน้อยจาก 350px เป็น 400px เพื่อรองรับฟอนต์ตัวใหญ่ขึ้นแบบไม่เบียดกัน */}
+        <div className="mx-auto w-full max-w-[400px]">
+          
+          <div className="mb-9">
+            {/* 🌟 ขยายหัวข้อใหญ่ขึ้นจาก text-2xl -> text-4xl หนาสะใจ */}
+            <h1 className="text-4xl font-black tracking-tight text-white mb-2.5">
+              Sign In to Console
+            </h1>
+            {/* 🌟 ขยายคำอธิบายย่อยจาก text-xs -> text-sm และปรับสีให้อ่านง่ายขึ้น */}
+            <p className="text-slate-300 text-sm font-semibold tracking-wide">
+              ป้อนบัญชีสิทธิ์ระดับ IT Administrator เพื่อเข้าใช้งานระบบ
+            </p>
+          </div>
+
+          <form onSubmit={handleSignIn} className="space-y-6">
+            <div>
+              {/* 🌟 ขยายหัวข้อ Input จาก text-[10px] -> text-xs และเพิ่มความหนา */}
+              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-widest mb-2.5">
+                Operator Username
+              </label>
+              {/* 🌟 ปรับขนาดช่องและตัวอักษรพิมพ์ด้านใน: เพิ่มขนาดฟอนต์จาก text-sm -> text-base และขยายพื้นที่กดด้วย py-3.5 */}
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="ชื่อผู้ใช้งานแอดมิน..."
+                className="w-full bg-[#090d16] border border-slate-800/90 rounded-xl px-4 py-3.5 text-base text-white font-bold placeholder-slate-600 focus:outline-none focus:border-slate-600 transition-all duration-150"
+              />
+            </div>
+
+            <div>
+              {/* 🌟 ขยายหัวข้อ Input จาก text-[10px] -> text-xs และเพิ่มความหนา */}
+              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-widest mb-2.5">
+                Security Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                /* 🌟 ขยายขนาดช่องรหัสผ่านให้ใหญ่เต็มตารับกับช่องด้านบน */
+                className="w-full bg-[#090d16] border border-slate-800/90 rounded-xl px-4 py-3.5 text-base text-white font-mono placeholder-slate-700 focus:outline-none focus:border-slate-600 transition-all duration-150"
+              />
+            </div>
+
+            {/* 🌟 ปรับปรุงปุ่มกด: ขยายขนาดข้อความด้านในจาก text-xs -> text-sm และเพิ่มความหนาตัวอักษรขั้นสุด เพิ่มขนาด padding (py-3.5) ให้ปุ่มดูสมดุลและใหญ่เต็มตา */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-slate-100 hover:bg-white disabled:bg-slate-950 disabled:text-slate-700 text-black font-black text-sm uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md active:scale-[0.99] transition-all duration-150 mt-2 flex justify-center items-center"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "Authenticate"
+              )}
+            </button>
+          </form>
+
+          {/* 🌟 ขยายฟุตเตอร์ด้านล่างขึ้นเล็กน้อยจาก text-[10px] -> text-xs */}
+          <div className="mt-9 pt-6 border-t border-slate-900/60 flex justify-between items-center text-xs text-slate-400 font-bold tracking-wide">
+            <span>AURA SECURITY DIRECTORY</span>
+            <span className="font-mono text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800/80">TLS 1.3</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+export default Login;
