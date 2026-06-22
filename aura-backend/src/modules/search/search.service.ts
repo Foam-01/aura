@@ -29,7 +29,11 @@ export class SearchService {
     const searchKey = keyword.toLowerCase().trim();
     const likeParam = `%${searchKey}%`;
 
-    // 🚀 ยิง Query ขนานพร้อมกัน 8 ระบบหลัก อิงคอลัมน์ตาม Schema จริงที่โฟมให้มา
+    // 🌟 SMART VALIDATOR: ดักจับข้อมูลประเภท "ตัวเลขล้วน" (เช่น 19, 3197, 3966)
+    // ถ้าใช่ระบบจะเปลี่ยนคำสั่งคิวรีให้ค้นแบบตรงตัวเป๊ะ ๆ (=) เพื่อไม่ให้ดึงข้อมูลคนอื่นติดมาด้วย
+    const isNumeric = /^\d+$/.test(searchKey); 
+
+    // 🚀 ยิง Query ขนานพร้อมกัน 8 ระบบหลักแบบจำแนกความแม่นยำรายฟิลด์
     const [
       airaResult,
       atsResult,
@@ -40,10 +44,12 @@ export class SearchService {
       preconfirmResult,
       tfexResult,
     ] = await Promise.all([
+      
       // 1. AIRA
       this.airaPrisma.$queryRaw<any[]>`
         SELECT Username, IsAdmin FROM [Admin] 
-        WHERE LOWER(Username) LIKE ${likeParam}
+        WHERE (CASE WHEN ${isNumeric} = 1 THEN CAST(ID AS VARCHAR) ELSE LOWER(Username) END) = ${searchKey}
+           OR (CASE WHEN ${isNumeric} = 0 THEN LOWER(Username) ELSE '' END) LIKE ${likeParam}
       `
         .then((res) =>
           res.length > 0
@@ -54,23 +60,15 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: {},
               }))
-            : [
-                {
-                  system: 'AIRA',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'AIRA', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('AIRA', e, keyword)),
 
-      // 2. ATSRequest (แมปตรงฟิลด์ username และ name ตามดาต้าจริง เช่น Raphatphorn, 3197)
+      // 2. ATSRequest
       this.atsPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, is_active FROM [users] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
@@ -81,23 +79,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [
-                {
-                  system: 'ATSRequest',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'ATSRequest', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('ATSRequest', e, keyword)),
 
-      // 3. ForeCast (สแกนหาจากช่อง username และช่อง name ตามดาต้าจริงของกลุ่มตัวเลขพนักงาน)
+      // 3. ForeCast
       this.forecastPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, user_group, is_active FROM [tbl_user] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
@@ -108,23 +98,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, department: u.user_group },
               }))
-            : [
-                {
-                  system: 'ForeCast',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'ForeCast', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('ForeCast', e, keyword)),
 
-      // 4. GlobalTrade (แมปเช็กผ่านช่อง username และ name ภาษาอังกฤษตรงปก)
+      // 4. GlobalTrade
       this.gtPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize FROM [users] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
@@ -135,23 +117,15 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: { fullName: u.name, department: 'N/A' },
               }))
-            : [
-                {
-                  system: 'GlobalTrade',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'GlobalTrade', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('GlobalTrade', e, keyword)),
 
-      // 5. IPO Plus (แมปค้นหาจากฟิลด์ username และ name จากอาร์เรย์ 88 แถวในเบสจริง)
+      // 5. IPO Plus
       this.ipoPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, project_access, is_active FROM [users] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
@@ -162,81 +136,53 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, projectGroup: u.project_access },
               }))
-            : [
-                {
-                  system: 'IPO Plus',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'IPO Plus', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
 
-      // 6. MTC (รองรับทั้งภาษาไทยและอังกฤษตามข้อมูลจริง เช่น ศุภรัตน์, จารุกิตติ์)
+      // 6. MTC
       this.mtcPrisma.$queryRaw<any[]>`
         SELECT username, name, is_active FROM [users] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
             ? res.map((u) => ({
                 system: 'MTC',
                 username: u.username,
-                role:
-                  u.username?.toUpperCase() === 'ADMIN'
-                    ? 'Admin'
-                    : 'General User',
+                role: u.username?.toUpperCase() === 'ADMIN' ? 'Admin' : 'General User',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [
-                {
-                  system: 'MTC',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'MTC', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('MTC', e, keyword)),
 
-      // 7. PreConfirm (ใช้ authoize และดักค้นหาจากช่องรหัสเลขรวมทั้ง name รายคน เช่น Suthep Keandow)
+      // 7. PreConfirm
       this.preconfirmPrisma.$queryRaw<any[]>`
         SELECT username, name, authoize, user_group, active FROM [tbl_user] 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
             ? res.map((u) => ({
                 system: 'PreConfirm',
                 username: u.username,
-                role:
-                  u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
+                role: u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
                 status: u.active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [
-                {
-                  system: 'PreConfirm',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'PreConfirm', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('PreConfirm', e, keyword)),
 
-      // 8. TfexMIS (ดึง Absolute Path ส่องหาผ่านช่องเลข 0001-0019 และชื่อพนักงานภาษาอังกฤษตัวใหญ่)
+      // 8. TfexMIS
       this.tfexPrisma.$queryRaw<any[]>`
         SELECT username, name, authorize, user_group, is_active FROM TfexMIS.dbo.users 
-        WHERE LOWER(username) LIKE ${likeParam}
-           OR LOWER(name) LIKE ${likeParam}
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
         .then((res) =>
           res.length > 0
@@ -247,15 +193,7 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [
-                {
-                  system: 'TfexMIS',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'TfexMIS', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
         )
         .catch((e) => this.handleSystemError('TfexMIS', e, keyword)),
     ]);
@@ -283,11 +221,7 @@ export class SearchService {
     };
   }
 
-  private handleSystemError(
-    systemName: string,
-    error: any,
-    fallbackKeyword: string,
-  ) {
+  private handleSystemError(systemName: string, error: any, fallbackKeyword: string) {
     console.error(
       `🔥 [${systemName}] System is unreachable or query failed:`,
       error?.message || error,
