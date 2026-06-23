@@ -8,6 +8,8 @@ import { GtPrismaService } from '../../prisma/gt-prisma.service';
 import { IpoPrismaService } from '../../prisma/ipo-prisma.service';
 import { PreconfirmPrismaService } from '../../prisma/preconfirm-prisma.service';
 import { TfexPrismaService } from '../../prisma/tfex-prisma.service';
+// 🌟 1. Import ตัวกล้องวงจรปิดที่เราสร้างขึ้นมาใช้งานครับโฟม
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 @Injectable()
 export class SearchService {
@@ -21,17 +23,19 @@ export class SearchService {
     private readonly ipoPrisma: IpoPrismaService,
     private readonly preconfirmPrisma: PreconfirmPrismaService,
     private readonly tfexPrisma: TfexPrismaService,
+    // 🔌 2. ฉีด AuditLogService เข้ามาในระบบควบคุม Search ขนาน
+    private readonly auditLogService: AuditLogService,
   ) {}
 
-  async searchUserAcrossSystems(keyword: string) {
+  // 🌟 3. ปรับให้ฟังก์ชันรับก้อนวัตถุดิบข้อมูลระบบ (req) เข้ามาด้วย
+  async searchUserAcrossSystems(keyword: string, req: any) {
     if (!keyword) return { status: 'success', count: 0, data: [] };
 
     const searchKey = keyword.toLowerCase().trim();
     const likeParam = `%${searchKey}%`;
 
     // 🌟 SMART VALIDATOR: ดักจับข้อมูลประเภท "ตัวเลขล้วน" (เช่น 19, 3197, 3966)
-    // ถ้าใช่ระบบจะเปลี่ยนคำสั่งคิวรีให้ค้นแบบตรงตัวเป๊ะ ๆ (=) เพื่อไม่ให้ดึงข้อมูลคนอื่นติดมาด้วย
-    const isNumeric = /^\d+$/.test(searchKey); 
+    const isNumeric = /^\d+$/.test(searchKey);
 
     // 🚀 ยิง Query ขนานพร้อมกัน 8 ระบบหลักแบบจำแนกความแม่นยำรายฟิลด์
     const [
@@ -44,7 +48,6 @@ export class SearchService {
       preconfirmResult,
       tfexResult,
     ] = await Promise.all([
-      
       // 1. AIRA
       this.airaPrisma.$queryRaw<any[]>`
         SELECT Username, IsAdmin FROM [Admin] 
@@ -60,7 +63,15 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: {},
               }))
-            : [{ system: 'AIRA', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'AIRA',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('AIRA', e, keyword)),
 
@@ -79,7 +90,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [{ system: 'ATSRequest', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'ATSRequest',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('ATSRequest', e, keyword)),
 
@@ -98,7 +117,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, department: u.user_group },
               }))
-            : [{ system: 'ForeCast', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'ForeCast',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('ForeCast', e, keyword)),
 
@@ -117,7 +144,15 @@ export class SearchService {
                 status: 'ACTIVE',
                 details: { fullName: u.name, department: 'N/A' },
               }))
-            : [{ system: 'GlobalTrade', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'GlobalTrade',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('GlobalTrade', e, keyword)),
 
@@ -136,7 +171,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, projectGroup: u.project_access },
               }))
-            : [{ system: 'IPO Plus', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'IPO Plus',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
 
@@ -151,11 +194,22 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'MTC',
                 username: u.username,
-                role: u.username?.toUpperCase() === 'ADMIN' ? 'Admin' : 'General User',
+                role:
+                  u.username?.toUpperCase() === 'ADMIN'
+                    ? 'Admin'
+                    : 'General User',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name },
               }))
-            : [{ system: 'MTC', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'MTC',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('MTC', e, keyword)),
 
@@ -170,11 +224,20 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'PreConfirm',
                 username: u.username,
-                role: u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
+                role:
+                  u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
                 status: u.active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [{ system: 'PreConfirm', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'PreConfirm',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('PreConfirm', e, keyword)),
 
@@ -193,7 +256,15 @@ export class SearchService {
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [{ system: 'TfexMIS', username: keyword, role: 'N/A', status: 'NOT_FOUND', details: {} }],
+            : [
+                {
+                  system: 'TfexMIS',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
         )
         .catch((e) => this.handleSystemError('TfexMIS', e, keyword)),
     ]);
@@ -214,6 +285,33 @@ export class SearchService {
         index === self.findIndex((other) => other.system === item.system),
     );
 
+    // === บรรทัดที่อยู่ท้ายๆ ของฟังก์ชัน searchUserAcrossSystems ในไฟล์ search.service.ts ===
+
+    // 📸 [แอบสับบันทึกประวัติการสืบค้น]: หย่อนข้อมูลลงตาราง AuditLogs บน SQL Server
+    try {
+      // 🌟 ดักจับโครงสร้าง Payload ทุกรูปแบบ (ไม่ว่าจะเก็บใน user หรือ username หรือ userId)
+      const adminUser =
+        req.user?.username ||
+        req.user?.user ||
+        req.user?.userId ||
+        'Unknown Admin';
+
+      await this.auditLogService.createLog({
+        action_user: String(adminUser),
+        search_key: keyword,
+        ip_address: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+        browser_info: req.headers['user-agent'] || 'Unknown Browser',
+      });
+      console.log(
+        `[Audit Log] 📝 บันทึกประวัติสำเร็จ: ${adminUser} เสิร์ชรหัส ${keyword}`,
+      );
+    } catch (auditError) {
+      console.error(
+        '❌ Failed to write log inside parallel search core:',
+        auditError,
+      );
+    }
+
     return {
       status: 'success',
       count: uniqueResults.length,
@@ -221,7 +319,11 @@ export class SearchService {
     };
   }
 
-  private handleSystemError(systemName: string, error: any, fallbackKeyword: string) {
+  private handleSystemError(
+    systemName: string,
+    error: any,
+    fallbackKeyword: string,
+  ) {
     console.error(
       `🔥 [${systemName}] System is unreachable or query failed:`,
       error?.message || error,

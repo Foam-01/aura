@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import AuthService from "./auth.service";
-import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -26,16 +24,37 @@ function Login() {
       const payload = { usr: username, pwd: password };
       const res = await AuthService.login(payload);
 
-      if (res.data && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        navigate("/home");
+      // 🌟 ดักดึง Token ทุกมิติ
+      const finalToken = res?.token || res?.data?.token || (typeof res === 'string' ? res : null);
+
+      if (finalToken) {
+        // 1. 🎫 เซฟตั๋ว VIP ลงกระเป๋าเบราว์เซอร์
+        localStorage.setItem("token", finalToken);
+
+        // 2. 🎉 ขึ้นป๊อปอัปสำเร็จโชว์ให้เต็มตา 1.3 วินาที
+        Swal.fire({
+          icon: "success",
+          title: "Authentication Success",
+          text: "เข้าสู่ระบบควบคุมสิทธิ์ AURA สำเร็จ",
+          confirmButtonColor: "#1e293b",
+          timer: 1300,
+          showConfirmButton: false,
+        }).then(() => {
+          // 3. 🚀 [สับท่อตัดจบงาน]: บังคับเปิดหน้าต่างควบคุมหลักแบบชัวร์ 100% หลังป๊อปอัปจบงาน
+          window.location.replace("/home");
+        });
+
+      } else {
+        console.error("Token format mismatch:", res);
+        throw new Error("รูปแบบ Token ไม่ถูกต้อง");
       }
     } catch (error) {
+      console.error("Login Error:", error);
       Swal.fire({
         icon: "error",
         title: "Access Denied",
         confirmButtonColor: "#1e293b",
-        text: error.response?.data?.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+        text: error.response?.data?.message || error.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
       });
     } finally {
       setLoading(false);
@@ -45,7 +64,7 @@ function Login() {
   return (
     <div className="min-h-screen w-full flex bg-[#030712] text-slate-200 antialiased" style={{ fontFamily: "'Inter', 'Sarabun', sans-serif" }}>
       
-      {/* 🌌 ฝั่งซ้าย: Branding Panel (สไตล์คงเดิมที่ลงตัวแล้ว) */}
+      {/* 🌌 ฝั่งซ้าย: Branding Panel */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#010409] border-r border-slate-800/60 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px)", backgroundSize: '24px 24px' }} />
         
@@ -75,17 +94,14 @@ function Login() {
         </div>
       </div>
 
-      {/* 🔓 ฝั่งขวา: Console Form Panel (เวอร์ชันอัปเกรดขนาดฟอนต์และช่องกรอกให้อ่านง่ายขึ้นเต็มตา) */}
+      {/* 🔓 ฝั่งขวา: Console Form Panel */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 bg-[#030712]">
-        {/* 🌟 ขยายความกว้างสูงสุดของพื้นที่ฟอร์มเล็กน้อยจาก 350px เป็น 400px เพื่อรองรับฟอนต์ตัวใหญ่ขึ้นแบบไม่เบียดกัน */}
         <div className="mx-auto w-full max-w-[400px]">
           
           <div className="mb-9">
-            {/* 🌟 ขยายหัวข้อใหญ่ขึ้นจาก text-2xl -> text-4xl หนาสะใจ */}
             <h1 className="text-4xl font-black tracking-tight text-white mb-2.5">
               Sign In to Console
             </h1>
-            {/* 🌟 ขยายคำอธิบายย่อยจาก text-xs -> text-sm และปรับสีให้อ่านง่ายขึ้น */}
             <p className="text-slate-300 text-sm font-semibold tracking-wide">
               ป้อนบัญชีสิทธิ์ระดับ IT Administrator เพื่อเข้าใช้งานระบบ
             </p>
@@ -93,11 +109,9 @@ function Login() {
 
           <form onSubmit={handleSignIn} className="space-y-6">
             <div>
-              {/* 🌟 ขยายหัวข้อ Input จาก text-[10px] -> text-xs และเพิ่มความหนา */}
               <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-widest mb-2.5">
                 Operator Username
               </label>
-              {/* 🌟 ปรับขนาดช่องและตัวอักษรพิมพ์ด้านใน: เพิ่มขนาดฟอนต์จาก text-sm -> text-base และขยายพื้นที่กดด้วย py-3.5 */}
               <input
                 type="text"
                 value={username}
@@ -108,7 +122,6 @@ function Login() {
             </div>
 
             <div>
-              {/* 🌟 ขยายหัวข้อ Input จาก text-[10px] -> text-xs และเพิ่มความหนา */}
               <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-widest mb-2.5">
                 Security Password
               </label>
@@ -117,12 +130,10 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                /* 🌟 ขยายขนาดช่องรหัสผ่านให้ใหญ่เต็มตารับกับช่องด้านบน */
                 className="w-full bg-[#090d16] border border-slate-800/90 rounded-xl px-4 py-3.5 text-base text-white font-mono placeholder-slate-700 focus:outline-none focus:border-slate-600 transition-all duration-150"
               />
             </div>
 
-            {/* 🌟 ปรับปรุงปุ่มกด: ขยายขนาดข้อความด้านในจาก text-xs -> text-sm และเพิ่มความหนาตัวอักษรขั้นสุด เพิ่มขนาด padding (py-3.5) ให้ปุ่มดูสมดุลและใหญ่เต็มตา */}
             <button
               type="submit"
               disabled={loading}
@@ -136,7 +147,6 @@ function Login() {
             </button>
           </form>
 
-          {/* 🌟 ขยายฟุตเตอร์ด้านล่างขึ้นเล็กน้อยจาก text-[10px] -> text-xs */}
           <div className="mt-9 pt-6 border-t border-slate-900/60 flex justify-between items-center text-xs text-slate-400 font-bold tracking-wide">
             <span>AURA SECURITY DIRECTORY</span>
             <span className="font-mono text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800/80">TLS 1.3</span>

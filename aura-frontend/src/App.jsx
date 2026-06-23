@@ -16,9 +16,14 @@ function App() {
     setSearched(true);
     try {
       const response = await searchUserAcrossSystems(keyword);
-      setResults(response.data);
+      
+      // 🌟 [แก้ไขจุดนี้]: หลังบ้านพ่นมาเป็น { status: 'success', data: [...] } 
+      // หน้าบ้านจึงต้องดึงค่าจาก response.data มาลูปเรนเดอร์ลง Card ครับโฟม
+      setResults(response.data || []);
+      
     } catch (error) {
       console.error('Search failed:', error);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -26,7 +31,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#edf4fc] text-slate-700 font-sans antialiased flex selection:bg-sky-100 selection:text-sky-600">
-      
       {/* 🌟 Sidebar Component ฝั่งซ้าย */}
       <Sidebar />
 
@@ -65,7 +69,7 @@ function App() {
             </form>
           </div>
 
-          {/* Results Section Grid (🌟 กลับมาใช้ 4 คอลัมน์เพื่อความกระชับกะทัดรัด) */}
+          {/* Results Section Grid */}
           {searched && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {results.map((item, idx) => {
@@ -85,7 +89,6 @@ function App() {
                     }`}
                   >
                     <div>
-                      {/* Top System Header */}
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-bold text-[11px] tracking-wider text-slate-400 uppercase">
                           {item.system}
@@ -100,7 +103,6 @@ function App() {
                         </span>
                       </div>
 
-                      {/* Main Identity Info */}
                       <div className="space-y-1 mb-4">
                         <div className="text-[9px] uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1">
                           <span className={`w-1 h-1 rounded-full ${isActive ? 'bg-sky-400' : isInactive ? 'bg-amber-400' : 'bg-slate-300'}`} />
@@ -116,7 +118,6 @@ function App() {
                         )}
                       </div>
 
-                      {/* Role Display */}
                       <div className="flex justify-between items-center p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs">
                         <span className="text-slate-400 font-medium">สิทธิ์การใช้งาน</span>
                         <span className={`font-bold ${isActive ? 'text-sky-500' : isInactive ? 'text-amber-500' : 'text-slate-400'}`}>
@@ -125,7 +126,6 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Meta Details Box */}
                     {item.details && Object.keys(item.details).length > 0 && (
                       <div className="mt-4 pt-3 border-t border-slate-100 text-xs space-y-1.5">
                         {Object.entries(item.details).map(([key, val]) => {

@@ -2,13 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App"; 
 import "./styles/index.css"; 
-
-
-
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import Login from "./features/auth/Login"; 
+import DashboardPage from "./Pages/DashboardPage";
 
-// ถ้าไม่มี token ในเครื่อง จะดีดพากลับไปหน้า /login ทันที ป้องกันคนแอบพิมพ์ URL เข้าตรงๆ
+// 🛡️ ตัวกั้นประตูระดับหน้าด่านแรกของคอร์ระบบ
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -20,16 +18,20 @@ const ProtectedRoute = ({ children }) => {
 const router = createBrowserRouter([
   {
     path: "/",
-    
-    element: (
-      <ProtectedRoute>
-        <App />
-      </ProtectedRoute>
-    ),
+    element: <Navigate to="/home" replace />, 
   },
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/Dashboard",
+    element: (
+      // 🔒 [แก้ไขจุดนี้]: เพิ่มระบบตรวจตั๋ว Token ล็อกประตูทางเข้าหน้า Dashboard ให้แน่นหนาครับโฟม
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/home",
@@ -39,21 +41,9 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
- 
-  /*
   {
-    path: "/audit-logs",
-    element: (
-      <ProtectedRoute>
-        <AuditLogPage />
-      </ProtectedRoute>
-    ),
-  }
-  */
-  {
-    // ถ้าพิมพ์ URL มั่ว มารูทที่ไม่มีอยู่จริง ให้ดีดกลับหน้าหลัก
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: <Navigate to="/home" replace />,
   }
 ]);
 
