@@ -17,7 +17,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = this.jwtService.verify(token);
-      request.user = decoded; // ยัดก้อนผู้ใช้เข้าไปใน request context เพื่อให้นำไปทำพวก audit-log ส่องต่อได้ครับ
+      request.user = decoded; 
       return true;
     } catch (err) {
       throw new UnauthorizedException('สิทธิ์โทเคนไม่ถูกต้อง หรือหมดอายุแล้ว');

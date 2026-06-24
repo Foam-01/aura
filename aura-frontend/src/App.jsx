@@ -17,7 +17,7 @@ function App() {
     try {
       const response = await searchUserAcrossSystems(keyword);
       
-      // 🌟 [แก้ไขจุดนี้]: หลังบ้านพ่นมาเป็น { status: 'success', data: [...] } 
+      //  [แก้ไขจุดนี้]: หลังบ้านพ่นมาเป็น { status: 'success', data: [...] } 
       // หน้าบ้านจึงต้องดึงค่าจาก response.data มาลูปเรนเดอร์ลง Card ครับโฟม
       setResults(response.data || []);
       
@@ -31,10 +31,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#edf4fc] text-slate-700 font-sans antialiased flex selection:bg-sky-100 selection:text-sky-600">
-      {/* 🌟 Sidebar Component ฝั่งซ้าย */}
+      {/*  Sidebar Component ฝั่งซ้าย */}
       <Sidebar />
 
-      {/* 🖥️ Main Dashboard Panel ฝั่งขวา */}
+      {/*  Main Dashboard Panel ฝั่งขวา */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <main className="w-full mx-auto px-6 py-10">
           

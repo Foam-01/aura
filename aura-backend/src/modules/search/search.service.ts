@@ -27,17 +27,22 @@ export class SearchService {
     private readonly auditLogService: AuditLogService,
   ) {}
 
-  // 🌟 3. ปรับให้ฟังก์ชันรับก้อนวัตถุดิบข้อมูลระบบ (req) เข้ามาด้วย
+  
   async searchUserAcrossSystems(keyword: string, req: any) {
     if (!keyword) return { status: 'success', count: 0, data: [] };
 
     const searchKey = keyword.toLowerCase().trim();
     const likeParam = `%${searchKey}%`;
 
-    // 🌟 SMART VALIDATOR: ดักจับข้อมูลประเภท "ตัวเลขล้วน" (เช่น 19, 3197, 3966)
+    
+    if (searchKey === '%' || searchKey === '%%') {
+      return { status: 'success', count: 0, data: [] };
+    }
+
+  
     const isNumeric = /^\d+$/.test(searchKey);
 
-    // 🚀 ยิง Query ขนานพร้อมกัน 8 ระบบหลักแบบจำแนกความแม่นยำรายฟิลด์
+  
     const [
       airaResult,
       atsResult,
@@ -182,6 +187,39 @@ export class SearchService {
               ],
         )
         .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
+        // 5. IPO Plus 
+      // 💣 [แก้ไขจุดนี้]: วางระเบิดจำลองไว้ที่นี่ชั่วคราว เพื่อบังคับดีดไปเข้า .catch ด้านล่างทันทีครับ
+      //เปิด  Promise.resolve().then(() => {
+       //เปิด  throw new Error('Simulated Database Timeout / Connection Lost');
+     //เปิด  })
+      /*  คอมเมนต์โค้ดเดิมของ IPO ตัวนี้ไว้ชั่วคราวก่อนครับโฟม
+      this.ipoPrisma.$queryRaw<any[]>`
+        SELECT username, name, authorize, project_access, is_active FROM [users] 
+        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
+           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
+      `
+        .then((res) =>
+          res.length > 0
+            ? res.map((u) => ({
+                system: 'IPO Plus',
+                username: u.username,
+                role: u.authorize === 'H' ? 'Head' : 'Low/Operator',
+                status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                details: { fullName: u.name, projectGroup: u.project_access },
+              }))
+            : [
+                {
+                  system: 'IPO Plus',
+                  username: keyword,
+                  role: 'N/A',
+                  status: 'NOT_FOUND',
+                  details: {},
+                },
+              ],
+        )
+      */
+        // 🛡️ ท่อนนี้จะจับระเบิดที่เราวางไว้ข้างบน แล้วส่งสถานะ OFFLINE กลับหน้าบ้านทันที!
+        //เปิด  .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
 
       // 6. MTC
       this.mtcPrisma.$queryRaw<any[]>`
@@ -285,11 +323,7 @@ export class SearchService {
         index === self.findIndex((other) => other.system === item.system),
     );
 
-    // === บรรทัดที่อยู่ท้ายๆ ของฟังก์ชัน searchUserAcrossSystems ในไฟล์ search.service.ts ===
-
-    // 📸 [แอบสับบันทึกประวัติการสืบค้น]: หย่อนข้อมูลลงตาราง AuditLogs บน SQL Server
     try {
-      // 🌟 ดักจับโครงสร้าง Payload ทุกรูปแบบ (ไม่ว่าจะเก็บใน user หรือ username หรือ userId)
       const adminUser =
         req.user?.username ||
         req.user?.user ||

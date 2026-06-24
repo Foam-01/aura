@@ -7,7 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     PrismaModule,
-    // 🔒 [แก้ไขจุดนี้]: ใส่รหัสลับเดียวกันลงทะเบียนระเบียบความปลอดภัยครับโฟม
+    
     JwtModule.register({
       secret: 'your-secret-key',
     }),

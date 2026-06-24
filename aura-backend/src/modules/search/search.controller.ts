@@ -1,11 +1,10 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-// 🌟 1. ดึงตัวแจ้งสถานะความปลอดภัยของ Swagger เข้ามาใช้งาน
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'; 
 
-@ApiTags('Search') // 🏷️ ช่วยจัดหมวดหมู่ให้สวยงามบนหน้าเว็บ
-@ApiBearerAuth()   // 🔒 [แก้ไขจุดนี้]: สั่งให้ Swagger เปิดสแกนตั๋ว Token ประจำท่อนี้ทั้งหมดครับโฟม!
+@ApiTags('Search') 
+@ApiBearerAuth()   
 @Controller('api/user')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}

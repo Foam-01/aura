@@ -1,13 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-// 🌟 1. สลับมาใช้ CentralPrismaService เพื่อชี้เข้าหาเบส Central_User_Audit
 import { CentralPrismaService } from '../../prisma/central-prisma.service';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    // 🌟 2. เปลี่ยนมาเรียกใช้งานเซิร์ฟเวอร์ฐานข้อมูลกลาง
+    
     private readonly prisma: CentralPrismaService,
     private readonly jwtService: JwtService,
   ) {}
@@ -15,7 +14,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const searchKey = dto.usr.toLowerCase().trim();
 
-    // 🚀 3. ปรับคิวรี่ให้ยิงเข้าหาตาราง [AuraUser] และใช้คอลัมน์ชื่อพิกเซลตรงตามสเปก Prisma [user] และ [pwd] ครับโฟม
+    
     const users = await this.prisma.$queryRaw<any[]>`
       SELECT id, [user], [pwd], [name], [level] FROM [AuraUser]
       WHERE LOWER([user]) = ${searchKey} AND [pwd] = ${dto.pwd}
@@ -27,7 +26,7 @@ export class AuthService {
 
     const user = users[0];
     
-    // 🌟 4. ผูกค่า Payload ส่งไปฝังใน JWT Token (ใช้ชื่อฟิลด์พิมพ์เล็กตามตารางใหม่)
+    
     const payload = { 
       sub: user.id, 
       user: user.user, 

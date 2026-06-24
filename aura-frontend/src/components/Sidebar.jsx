@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router-dom"; // 🌟 ดึง Link แ
 function Sidebar() {
   const [adminName, setAdminName] = useState("");
   const [adminLevel, setAdminLevel] = useState("");
-  const location = useLocation(); // 📸 จับพิกัดว่าตอนนี้แอดมินเปิดอยู่หน้าไหน
+  const location = useLocation(); 
 
   useEffect(() => {
     const verifyAdmin = async () => {
@@ -50,7 +50,7 @@ function Sidebar() {
   return (
     <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between p-5 sticky top-0 h-screen shrink-0 z-20 font-sans select-none">
       
-      {/* 🌌 ส่วนบน: แบรนดิ้งระบบ & เมนูทำงาน */}
+      {/*  ส่วนบน: แบรนดิ้งระบบ & เมนูทำงาน */}
       <div className="space-y-8">
         
         {/* Logo Header */}
@@ -70,7 +70,7 @@ function Sidebar() {
             Menu Operations
           </div>
           
-          {/* 🔍 ปุ่มเมนูหน้าค้นหาพนักงานหลัก */}
+          {/*  ปุ่มเมนูหน้าค้นหาพนักงานหลัก */}
           <Link 
             to="/home" 
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border font-extrabold text-xs tracking-wide transition-all duration-200 ${
@@ -85,7 +85,7 @@ function Sidebar() {
             Directory Search
           </Link>
 
-          {/* 📊 ปุ่มเมนูหน้าสรุปประวัติ Dashboard */}
+          {/*  ปุ่มเมนูหน้าสรุปประวัติ Dashboard */}
           <Link 
             to="/Dashboard" 
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border font-extrabold text-xs tracking-wide transition-all duration-200 ${
@@ -103,7 +103,7 @@ function Sidebar() {
         </nav>
       </div>
 
-      {/* 🔒 ส่วนล่าง: กล่องข้อมูล Profile Account ดึงค่าจาก Payload สดๆ */}
+      {/*  ส่วนล่าง: กล่องข้อมูล Profile Account ดึงค่าจาก Payload สดๆ */}
       <div className="border-t border-slate-100 pt-5">
         <div className="bg-slate-50/80 rounded-2xl p-3 border border-slate-100 flex items-center justify-between gap-2 shadow-inner">
           

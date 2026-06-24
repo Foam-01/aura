@@ -6,14 +6,13 @@ export default function DashboardPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🌟 เปิดดูไฟล์ src/pages/DashboardPage.jsx ของโฟม ตรงช่วงท่อนบน
+  
   useEffect(() => {
     const fetchLogs = async () => {
       try {
         const res = await getAuditLogs();
         
-        // 🚀 [แก้ไขจุดนี้]: เปลี่ยนจาก res.data เป็น res โดยตรง 
-        // เนื่องจากหลังบ้านส่งก้อนอาเรย์มาสดๆ โดยไม่มี Object success ครอบชั้นนอกครับ
+       
         setLogs(res || []); 
         
       } catch (err) {
@@ -25,7 +24,7 @@ export default function DashboardPage() {
     fetchLogs();
   }, []);
 
-  // 📊 พาร์ทคำนวณ Analytics สรุปยอดอัตโนมัติจากข้อมูลตาราง AuditLogs
+
   const totalSearches = logs.length;
   const uniqueKeywords = new Set(logs.map(log => log.search_key.toLowerCase().trim())).size;
   const uniqueUsers = new Set(logs.map(log => log.action_user)).size;
@@ -54,7 +53,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-6">
               
-              {/* 📊 Analytics Cards Section */}
+              {/*  Analytics Cards Section */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div className="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
                   <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider">จำนวนการสืบค้นทั้งหมด</div>
@@ -70,7 +69,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* 📑 ตารางประวัติ Log รายการสืบค้นสดย้อนหลัง */}
+              {/*  ตารางประวัติ Log รายการสืบค้นสดย้อนหลัง */}
               <div className="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="text-sm font-black text-slate-800">บันทึกประวัติการสืบค้น (Audit Log Trail)</h3>

@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import Login from "./features/auth/Login"; 
 import DashboardPage from "./Pages/DashboardPage";
 
-// 🛡️ ตัวกั้นประตูระดับหน้าด่านแรกของคอร์ระบบ
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -27,7 +27,7 @@ const router = createBrowserRouter([
   {
     path: "/Dashboard",
     element: (
-      // 🔒 [แก้ไขจุดนี้]: เพิ่มระบบตรวจตั๋ว Token ล็อกประตูทางเข้าหน้า Dashboard ให้แน่นหนาครับโฟม
+     
       <ProtectedRoute>
         <DashboardPage />
       </ProtectedRoute>
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
+  //<React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
+  //</React.StrictMode>
 );

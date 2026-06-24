@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuditLogService } from './audit-log.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'; // 🌟 ดึงเครื่องมือเข้ามา
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'; 
 
 @ApiTags('AuditLog')
-@ApiBearerAuth()   // 🔒 สั่งเปิดช่องใส่ Token บนหน้าคู่มือของท่อประวัติย้อนหลังด้วยครับโฟม
+@ApiBearerAuth()   
 @Controller('api/audit-logs')
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}

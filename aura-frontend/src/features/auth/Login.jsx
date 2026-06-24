@@ -24,14 +24,14 @@ function Login() {
       const payload = { usr: username, pwd: password };
       const res = await AuthService.login(payload);
 
-      // 🌟 ดักดึง Token ทุกมิติ
+      //  ดักดึง Token ทุกมิติ
       const finalToken = res?.token || res?.data?.token || (typeof res === 'string' ? res : null);
 
       if (finalToken) {
-        // 1. 🎫 เซฟตั๋ว VIP ลงกระเป๋าเบราว์เซอร์
+        // 1.  เซฟตั๋ว VIP ลงกระเป๋าเบราว์เซอร์
         localStorage.setItem("token", finalToken);
 
-        // 2. 🎉 ขึ้นป๊อปอัปสำเร็จโชว์ให้เต็มตา 1.3 วินาที
+        // 2.  ขึ้นป๊อปอัปสำเร็จโชว์ให้เต็มตา 1.3 วินาที
         Swal.fire({
           icon: "success",
           title: "Authentication Success",
@@ -40,7 +40,7 @@ function Login() {
           timer: 1300,
           showConfirmButton: false,
         }).then(() => {
-          // 3. 🚀 [สับท่อตัดจบงาน]: บังคับเปิดหน้าต่างควบคุมหลักแบบชัวร์ 100% หลังป๊อปอัปจบงาน
+          // 3.  [สับท่อตัดจบงาน]: บังคับเปิดหน้าต่างควบคุมหลักแบบชัวร์ 100% หลังป๊อปอัปจบงาน
           window.location.replace("/home");
         });
 
@@ -64,7 +64,7 @@ function Login() {
   return (
     <div className="min-h-screen w-full flex bg-[#030712] text-slate-200 antialiased" style={{ fontFamily: "'Inter', 'Sarabun', sans-serif" }}>
       
-      {/* 🌌 ฝั่งซ้าย: Branding Panel */}
+      {/*  ฝั่งซ้าย: Branding Panel */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#010409] border-r border-slate-800/60 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(to right, #38bdf8 1px, transparent 1px), linear-gradient(to bottom, #38bdf8 1px, transparent 1px)", backgroundSize: '24px 24px' }} />
         
@@ -77,7 +77,7 @@ function Login() {
 
         <div className="space-y-3.5 relative z-10">
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 border border-slate-800 text-slate-400 uppercase tracking-widest">
-            🛡️ Core Terminal
+             Core Terminal
           </span>
           <h2 className="text-3xl font-black tracking-tight text-white leading-tight">
             Centralized Accounts <br />
@@ -94,7 +94,7 @@ function Login() {
         </div>
       </div>
 
-      {/* 🔓 ฝั่งขวา: Console Form Panel */}
+      {/*  ฝั่งขวา: Console Form Panel */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 bg-[#030712]">
         <div className="mx-auto w-full max-w-[400px]">
           

@@ -2,12 +2,12 @@ import axios from "axios";
 import config from "../../constants/config";
 
 const AuthService = {
-  // 1. ยิงล็อกอินเข้าฐานข้อมูลหลักของ AURA
+  
   login: async (payload) => {
     return await axios.post(`${config.apiPath}/api/user/login`, payload);
   },
 
-  // 2. ดึง Profile ไปอัปเดตชื่อผู้ใช้งานที่ Sidebar
+ 
   getUserInfo: async () => {
     const token = localStorage.getItem("token");
     return await axios.get(`${config.apiPath}/api/user/info`, {

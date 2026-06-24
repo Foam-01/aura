@@ -5,7 +5,7 @@ import { CentralPrismaService } from '../../prisma/central-prisma.service';
 export class AuditLogService {
   constructor(private prisma: CentralPrismaService) {}
 
-  // 📝 ฟังก์ชันสำหรับสร้าง Log ใหม่ลงตาราง AuditLogs (ของเดิม)
+  
   async createLog(data: {
     action_user: string;
     search_key: string;
@@ -27,12 +27,12 @@ export class AuditLogService {
     }
   }
 
-  // 📜 [เพิ่มฟังก์ชันนี้]: ดึงประวัติ Log ทั้งหมดส่งออกไปหน้าบ้าน (เรียงจากใหม่สุดไปเก่าสุด)
+  
   async getLogs() {
     try {
       return await this.prisma.auditLogs.findMany({
         orderBy: {
-          created_at: 'desc', // ดึงอันล่าสุดขึ้นมาโชว์ก่อนเพื่อความปลอดภัยในการตรวจสอบ
+          created_at: 'desc', 
         },
       });
     } catch (error) {

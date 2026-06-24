@@ -3,7 +3,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-// 🌟 สลับมาดึง CentralPrismaService แทนตัวเก่าครับโฟม
 import { CentralPrismaService } from '../../prisma/central-prisma.service'; 
 
 @Module({
