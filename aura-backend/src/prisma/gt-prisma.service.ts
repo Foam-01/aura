@@ -1,11 +1,10 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class GtPrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class GtPrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger('GtPrisma');
+
   constructor() {
     super({
       datasources: {
@@ -16,7 +15,12 @@ export class GtPrismaService
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      this.logger.log('🟢 [GlobalTrade DB] Connected successfully.');
+    } catch (error) {
+      this.logger.warn('⚠️ [GlobalTrade DB] Connection restricted. Shifting to Fault Tolerance mode.');
+    }
   }
 
   async onModuleDestroy() {

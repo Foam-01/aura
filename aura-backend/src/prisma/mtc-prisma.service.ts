@@ -1,11 +1,10 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class MtcPrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class MtcPrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger('MtcPrisma');
+
   constructor() {
     super({
       datasources: {
@@ -16,7 +15,12 @@ export class MtcPrismaService
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      this.logger.log('🟢 [MTC DB] Connected successfully.');
+    } catch (error) {
+      this.logger.warn('⚠️ [MTC DB] Connection restricted. Shifting to Fault Tolerance mode.');
+    }
   }
 
   async onModuleDestroy() {

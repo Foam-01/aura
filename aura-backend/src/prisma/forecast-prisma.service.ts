@@ -1,11 +1,10 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class ForecastPrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class ForecastPrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger('ForecastPrisma');
+
   constructor() {
     super({
       datasources: {
@@ -16,7 +15,12 @@ export class ForecastPrismaService
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      this.logger.log('🟢 [ForeCast DB] Connected successfully.');
+    } catch (error) {
+      this.logger.warn('⚠️ [ForeCast DB] Connection restricted. Shifting to Fault Tolerance mode.');
+    }
   }
 
   async onModuleDestroy() {

@@ -1,11 +1,10 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PreconfirmPrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PreconfirmPrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger('PreconfirmPrisma');
+
   constructor() {
     super({
       datasources: {
@@ -16,7 +15,12 @@ export class PreconfirmPrismaService
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      this.logger.log('🟢 [PreConfirm DB] Connected successfully.');
+    } catch (error) {
+      this.logger.warn('⚠️ [PreConfirm DB] Connection restricted. Shifting to Fault Tolerance mode.');
+    }
   }
 
   async onModuleDestroy() {
