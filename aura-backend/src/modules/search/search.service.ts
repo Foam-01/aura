@@ -8,7 +8,6 @@ import { GtPrismaService } from '../../prisma/gt-prisma.service';
 import { IpoPrismaService } from '../../prisma/ipo-prisma.service';
 import { PreconfirmPrismaService } from '../../prisma/preconfirm-prisma.service';
 import { TfexPrismaService } from '../../prisma/tfex-prisma.service';
-// 🌟 1. Import ตัวกล้องวงจรปิดที่เราสร้างขึ้นมาใช้งานครับโฟม
 import { AuditLogService } from '../audit-log/audit-log.service';
 
 @Injectable()
@@ -23,26 +22,21 @@ export class SearchService {
     private readonly ipoPrisma: IpoPrismaService,
     private readonly preconfirmPrisma: PreconfirmPrismaService,
     private readonly tfexPrisma: TfexPrismaService,
-    // 🔌 2. ฉีด AuditLogService เข้ามาในระบบควบคุม Search ขนาน
     private readonly auditLogService: AuditLogService,
   ) {}
 
-  
   async searchUserAcrossSystems(keyword: string, req: any) {
     if (!keyword) return { status: 'success', count: 0, data: [] };
 
     const searchKey = keyword.toLowerCase().trim();
     const likeParam = `%${searchKey}%`;
 
-    
     if (searchKey === '%' || searchKey === '%%') {
       return { status: 'success', count: 0, data: [] };
     }
 
-  
     const isNumeric = /^\d+$/.test(searchKey);
 
-  
     const [
       airaResult,
       atsResult,
@@ -66,17 +60,10 @@ export class SearchService {
                 username: u.Username,
                 role: u.IsAdmin === 1 ? 'Admin' : 'General User',
                 status: 'ACTIVE',
+                insight: 'พบชื่อผู้ใช้งานในบัญชีควบคุมระบบหลักสิทธิ์ผู้ดูแลกลาง',
                 details: {},
               }))
-            : [
-                {
-                  system: 'AIRA',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'AIRA', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบประวัติผูกบัญชีในระบบแกนกลางหลัก', details: {} }],
         )
         .catch((e) => this.handleSystemError('AIRA', e, keyword)),
 
@@ -93,17 +80,10 @@ export class SearchService {
                 username: u.username,
                 role: u.authorize === 'H' ? 'Head/Admin' : 'User',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                insight: 'พบโครงสร้างสิทธิ์เข้าทำงานระเบียนขอสิทธิ์คำสั่งโอนย้ายระบบส่งกำลัง',
                 details: { fullName: u.name },
               }))
-            : [
-                {
-                  system: 'ATSRequest',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'ATSRequest', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่มีรายชื่อขอยื่นสิทธิ์ผ่านระบบ ATS ค้างสารบบ', details: {} }],
         )
         .catch((e) => this.handleSystemError('ATSRequest', e, keyword)),
 
@@ -120,17 +100,10 @@ export class SearchService {
                 username: u.username,
                 role: u.authorize === 'H' ? 'Head' : 'Low/Operator',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                insight: 'พบบัญชีเข้าใช้งานระบบวิเคราะห์และพยากรณ์ส่วนแบ่งการตลาด',
                 details: { fullName: u.name, department: u.user_group },
               }))
-            : [
-                {
-                  system: 'ForeCast',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'ForeCast', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'พนักงานไม่มีส่วนเกี่ยวข้องกับสายงานการวิเคราะห์พยากรณ์ข้อมูล', details: {} }],
         )
         .catch((e) => this.handleSystemError('ForeCast', e, keyword)),
 
@@ -147,23 +120,17 @@ export class SearchService {
                 username: u.username,
                 role: u.authorize === 'H' ? 'Admin' : 'Operator',
                 status: 'ACTIVE',
+                insight: 'พบบัญชีปฏิบัติการระบบธุรกรรมซื้อขายตราสารทุนต่างประเทศ',
                 details: { fullName: u.name, department: 'N/A' },
               }))
-            : [
-                {
-                  system: 'GlobalTrade',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'GlobalTrade', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่มีบัญชีอนุมัติสำหรับเปิดพอร์ตธุรกรรมระหว่างประเทศ', details: {} }],
         )
         .catch((e) => this.handleSystemError('GlobalTrade', e, keyword)),
 
       // 5. IPO Plus
       this.ipoPrisma.$queryRaw<any[]>`
-        SELECT username, name, authorize, project_access, is_active FROM [users] 
+        SELECT username, name, authorize, project_access, is_active 
+        FROM [dbo].[users] 
         WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
            OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
       `
@@ -173,53 +140,13 @@ export class SearchService {
                 system: 'IPO Plus',
                 username: u.username,
                 role: u.authorize === 'H' ? 'Head' : 'Low/Operator',
-                status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                status: u.is_active === 1 || u.is_active === true ? 'ACTIVE' : 'INACTIVE',
+                insight: 'พบบัญชีสิทธิ์จัดสรรหุ้นไอพีโอออกใหม่รายระบบแยกตามรายชื่อควบคุม',
                 details: { fullName: u.name, projectGroup: u.project_access },
               }))
-            : [
-                {
-                  system: 'IPO Plus',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'IPO Plus', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบบัญชีสิทธิ์เข้าใช้งานระบบจองซื้อหุ้นกู้หรือ IPO', details: {} }],
         )
         .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
-        // 5. IPO Plus 
-      // 💣 [แก้ไขจุดนี้]: วางระเบิดจำลองไว้ที่นี่ชั่วคราว เพื่อบังคับดีดไปเข้า .catch ด้านล่างทันทีครับ
-      //เปิด  Promise.resolve().then(() => {
-       //เปิด  throw new Error('Simulated Database Timeout / Connection Lost');
-     //เปิด  })
-      /*  คอมเมนต์โค้ดเดิมของ IPO ตัวนี้ไว้ชั่วคราวก่อนครับโฟม
-      this.ipoPrisma.$queryRaw<any[]>`
-        SELECT username, name, authorize, project_access, is_active FROM [users] 
-        WHERE (${isNumeric} = 1 AND LOWER(username) = ${searchKey})
-           OR (${isNumeric} = 0 AND (LOWER(username) LIKE ${likeParam} OR LOWER(name) LIKE ${likeParam}))
-      `
-        .then((res) =>
-          res.length > 0
-            ? res.map((u) => ({
-                system: 'IPO Plus',
-                username: u.username,
-                role: u.authorize === 'H' ? 'Head' : 'Low/Operator',
-                status: u.is_active ? 'ACTIVE' : 'INACTIVE',
-                details: { fullName: u.name, projectGroup: u.project_access },
-              }))
-            : [
-                {
-                  system: 'IPO Plus',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
-        )
-      */
-        // 🛡️ ท่อนนี้จะจับระเบิดที่เราวางไว้ข้างบน แล้วส่งสถานะ OFFLINE กลับหน้าบ้านทันที!
-        //เปิด  .catch((e) => this.handleSystemError('IPO Plus', e, keyword)),
 
       // 6. MTC
       this.mtcPrisma.$queryRaw<any[]>`
@@ -232,22 +159,12 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'MTC',
                 username: u.username,
-                role:
-                  u.username?.toUpperCase() === 'ADMIN'
-                    ? 'Admin'
-                    : 'General User',
+                role: u.username?.toUpperCase() === 'ADMIN' ? 'Admin' : 'General User',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                insight: 'ระบุสถานะระเบียนผู้คุมบัญชีสัญญาระบบสินเชื่อและจำนำทะเบียนหลักทรัพย์',
                 details: { fullName: u.name },
               }))
-            : [
-                {
-                  system: 'MTC',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'MTC', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบบันทึกประวัติเปิดใช้บริการในระบบจำนำหลักทรัพย์ค้ำประกัน', details: {} }],
         )
         .catch((e) => this.handleSystemError('MTC', e, keyword)),
 
@@ -262,20 +179,12 @@ export class SearchService {
             ? res.map((u) => ({
                 system: 'PreConfirm',
                 username: u.username,
-                role:
-                  u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
+                role: u.authoize === 'IT' ? 'Admin' : 'Marketing / General User',
                 status: u.active ? 'ACTIVE' : 'INACTIVE',
+                insight: 'พบข้อมูลระบุความจำนงจับคู่สัญญาก่อนส่งคำสั่งซื้อขายจริงเข้าตลาดหลักทรัพย์',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [
-                {
-                  system: 'PreConfirm',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'PreConfirm', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่มีประวัติสิทธิ์การออกใบยืนยันตั๋วซื้อขายชั่วคราวค้างชำระ', details: {} }],
         )
         .catch((e) => this.handleSystemError('PreConfirm', e, keyword)),
 
@@ -292,17 +201,10 @@ export class SearchService {
                 username: u.username,
                 role: u.authorize === 'H' ? 'Admin' : 'Operator',
                 status: u.is_active ? 'ACTIVE' : 'INACTIVE',
+                insight: 'พบบัญชีระบบสารสนเทศเพื่อการจัดการตลาดสัญญาซื้อขายล่วงหน้า (TFEX)',
                 details: { fullName: u.name, group: u.user_group },
               }))
-            : [
-                {
-                  system: 'TfexMIS',
-                  username: keyword,
-                  role: 'N/A',
-                  status: 'NOT_FOUND',
-                  details: {},
-                },
-              ],
+            : [{ system: 'TfexMIS', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบสิทธิ์เปิดใช้ระบบสารสนเทศบริหารงานล่วงหน้าในเครือ', details: {} }],
         )
         .catch((e) => this.handleSystemError('TfexMIS', e, keyword)),
     ]);
@@ -318,56 +220,34 @@ export class SearchService {
       ...tfexResult,
     ];
 
-    const uniqueResults = mergedResults.filter(
-      (item, index, self) =>
-        index === self.findIndex((other) => other.system === item.system),
-    );
-
     try {
-      const adminUser =
-        req.user?.username ||
-        req.user?.user ||
-        req.user?.userId ||
-        'Unknown Admin';
-
+      const adminUser = req.user?.username || req.user?.user || req.user?.userId || 'Unknown Admin';
       await this.auditLogService.createLog({
         action_user: String(adminUser),
         search_key: keyword,
         ip_address: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
         browser_info: req.headers['user-agent'] || 'Unknown Browser',
       });
-      console.log(
-        `[Audit Log] 📝 บันทึกประวัติสำเร็จ: ${adminUser} เสิร์ชรหัส ${keyword}`,
-      );
     } catch (auditError) {
-      console.error(
-        '❌ Failed to write log inside parallel search core:',
-        auditError,
-      );
+      console.error('❌ Failed to write log inside parallel search core:', auditError);
     }
 
     return {
       status: 'success',
-      count: uniqueResults.length,
-      data: uniqueResults,
+      count: mergedResults.length,
+      data: mergedResults,
     };
   }
 
-  private handleSystemError(
-    systemName: string,
-    error: any,
-    fallbackKeyword: string,
-  ) {
-    console.error(
-      `🔥 [${systemName}] System is unreachable or query failed:`,
-      error?.message || error,
-    );
+  private handleSystemError(systemName: string, error: any, fallbackKeyword: string) {
+    console.error(`🔥 [${systemName}] System query failed:`, error?.message || error);
     return [
       {
         system: systemName,
         username: fallbackKeyword,
         role: 'N/A',
         status: 'OFFLINE',
+        insight: 'ช่องการเชื่อมต่อเซิร์ฟเวอร์ระบบเครือข่ายขัดข้องภายนอกชั่วคราว',
         details: { error: 'Connection failed' },
       },
     ];
