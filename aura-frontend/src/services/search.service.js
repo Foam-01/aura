@@ -1,20 +1,19 @@
 import axios from 'axios';
-import config from '../constants/config'; 
+import config from '../constants/config';
+import { getAuthHeaders } from '../features/auth/auth.service';
 
 const apiClient = axios.create({
-  baseURL: config.apiPath, 
+  baseURL: config.apiPath,
   timeout: 10000,
 });
 
 apiClient.interceptors.request.use(
   (req) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      req.headers.Authorization = `Bearer ${token}`;
-    }
+    const authHeaders = getAuthHeaders();
+    req.headers = { ...req.headers, ...authHeaders };
     return req;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export const searchUserAcrossSystems = async (keyword) => {

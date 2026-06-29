@@ -4,8 +4,8 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'; 
 
 @ApiTags('AuditLog')
-@ApiBearerAuth()   
-@Controller('api/audit-logs')
+@ApiBearerAuth()
+@Controller('audit-logs')
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 

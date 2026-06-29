@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import AuthService from "./auth.service";
+import AuthService, { clearStoredToken, setStoredToken } from "./auth.service";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -25,11 +25,10 @@ function Login() {
       const res = await AuthService.login(payload);
 
       //  ดักดึง Token ทุกมิติ
-      const finalToken = res?.token || res?.data?.token || (typeof res === 'string' ? res : null);
+      const finalToken = res?.data?.token || res?.data?.access_token || res?.token || res?.access_token || (typeof res === 'string' ? res : null);
 
       if (finalToken) {
-        // 1.  เซฟตั๋ว VIP ลงกระเป๋าเบราว์เซอร์
-        localStorage.setItem("token", finalToken);
+        setStoredToken(finalToken);
 
         // 2.  ขึ้นป๊อปอัปสำเร็จโชว์ให้เต็มตา 1.3 วินาที
         Swal.fire({
@@ -50,11 +49,17 @@ function Login() {
       }
     } catch (error) {
       console.error("Login Error:", error);
+      clearStoredToken();
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+
       Swal.fire({
         icon: "error",
         title: "Access Denied",
         confirmButtonColor: "#1e293b",
-        text: error.response?.data?.message || error.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+        text: typeof message === "string" ? message : "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
       });
     } finally {
       setLoading(false);

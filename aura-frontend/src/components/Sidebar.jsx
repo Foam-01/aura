@@ -88,9 +88,9 @@ function Sidebar() {
 
           {/* ปุ่มเมนูแดชบอร์ดลอร์กประวัติ */}
           <Link 
-            to="/Dashboard" 
+            to="/audit-logs" 
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border font-extrabold text-xs tracking-wide transition-all duration-200 ${
-              location.pathname === "/Dashboard"
+              location.pathname === "/audit-logs" || location.pathname === "/Dashboard"
                 ? "bg-sky-500/10 border-sky-500/20 text-sky-400 shadow-lg shadow-sky-500/[0.02]"
                 : "bg-transparent border-transparent text-slate-400 hover:bg-[#151f32] hover:text-white"
             }`}

@@ -5,11 +5,10 @@ import "./styles/index.css";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import Login from "./features/auth/Login"; 
 import DashboardPage from "./Pages/DashboardPage";
-
+import { isAuthenticated } from "./features/auth/auth.service";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
+  if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -25,13 +24,16 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: "/Dashboard",
+    path: "/audit-logs",
     element: (
-     
       <ProtectedRoute>
         <DashboardPage />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "/Dashboard",
+    element: <Navigate to="/audit-logs" replace />,
   },
   {
     path: "/home",
