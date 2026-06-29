@@ -2,7 +2,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { CentralPrismaService } from '../../prisma/central-prisma.service';
-import { InvalidCredentialsException, InvalidTokenException } from '../../common/exceptions/auth.exceptions';
+import {
+  InvalidCredentialsException,
+  InvalidTokenException,
+} from '../../common/exceptions/auth.exceptions';
 import { LoginDto } from './dto/login.dto';
 
 export function verifyPassword(inputPassword: string, storedPassword: string) {
@@ -34,14 +37,18 @@ export class AuthService {
     });
 
     if (!users || users.length === 0) {
-      throw new UnauthorizedException(new InvalidCredentialsException().message);
+      throw new UnauthorizedException(
+        new InvalidCredentialsException().message,
+      );
     }
 
     const user = users[0];
     const passwordMatches = verifyPassword(dto.pwd, user.pwd);
 
     if (!passwordMatches) {
-      throw new UnauthorizedException(new InvalidCredentialsException().message);
+      throw new UnauthorizedException(
+        new InvalidCredentialsException().message,
+      );
     }
 
     const payload = {
@@ -51,7 +58,8 @@ export class AuthService {
       level: user.level,
     };
 
-    const secret = this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
+    const secret =
+      this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
     const token = this.jwtService.sign(payload, { secret });
 
     return { token, access_token: token };
@@ -63,7 +71,8 @@ export class AuthService {
     }
     try {
       const jwt = authHeader.replace('Bearer ', '').trim();
-      const secret = this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
+      const secret =
+        this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
       const payload = this.jwtService.verify(jwt, { secret });
       return { payload };
     } catch (e) {

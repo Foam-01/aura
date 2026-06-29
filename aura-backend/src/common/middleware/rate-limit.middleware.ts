@@ -3,7 +3,10 @@ import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class RateLimitMiddleware implements NestMiddleware {
-  private readonly attempts = new Map<string, { count: number; resetAt: number }>();
+  private readonly attempts = new Map<
+    string,
+    { count: number; resetAt: number }
+  >();
   private readonly windowMs = 15 * 60 * 1000;
   private readonly maxAttempts = 10;
 

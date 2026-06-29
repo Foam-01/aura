@@ -25,7 +25,8 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const requestedPort = Number(process.env.PORT || 3000);
-  const port = Number.isNaN(requestedPort) || requestedPort <= 0 ? 3000 : requestedPort;
+  const port =
+    Number.isNaN(requestedPort) || requestedPort <= 0 ? 3000 : requestedPort;
 
   const listenWithFallback = async (startPort: number, attempts = 5) => {
     let currentPort = startPort;
@@ -38,7 +39,9 @@ async function bootstrap() {
         const err = error as NodeJS.ErrnoException;
         if (err.code === 'EADDRINUSE' && attempt < attempts - 1) {
           currentPort += 1;
-          console.warn(`⚠️ Port ${startPort + attempt} is busy, retrying on ${currentPort}...`);
+          console.warn(
+            `⚠️ Port ${startPort + attempt} is busy, retrying on ${currentPort}...`,
+          );
           continue;
         }
         throw error;
@@ -49,7 +52,11 @@ async function bootstrap() {
   };
 
   const actualPort = await listenWithFallback(port);
-  console.log(`🚀 เซิร์ฟเวอร์หลักรันสำเร็จแล้วที่ช่องทาง: http://localhost:${actualPort}`);
-  console.log(`📑 แวะชมคู่มือ API Spec (Swagger UI)  ที่: http://localhost:${actualPort}/docs`);
+  console.log(
+    `🚀 เซิร์ฟเวอร์หลักรันสำเร็จแล้วที่ช่องทาง: http://localhost:${actualPort}`,
+  );
+  console.log(
+    `📑 แวะชมคู่มือ API Spec (Swagger UI)  ที่: http://localhost:${actualPort}/docs`,
+  );
 }
 bootstrap();

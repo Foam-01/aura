@@ -17,7 +17,9 @@ describe('JwtAuthGuard', () => {
 
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ headers: { authorization: 'Bearer valid-token' } }),
+        getRequest: () => ({
+          headers: { authorization: 'Bearer valid-token' },
+        }),
       }),
     } as ExecutionContext;
 
@@ -29,7 +31,9 @@ describe('JwtAuthGuard', () => {
 
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ headers: { Authorization: 'Bearer valid-token' } }),
+        getRequest: () => ({
+          headers: { Authorization: 'Bearer valid-token' },
+        }),
       }),
     } as ExecutionContext;
 

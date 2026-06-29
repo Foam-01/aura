@@ -24,12 +24,16 @@ describe('AuthController', () => {
   it('delegates login to auth service', async () => {
     authService.login.mockResolvedValue({ token: 'abc' });
 
-    await expect(controller.login({ usr: 'admin', pwd: 'secret' } as any)).resolves.toEqual({ token: 'abc' });
+    await expect(
+      controller.login({ usr: 'admin', pwd: 'secret' } as any),
+    ).resolves.toEqual({ token: 'abc' });
   });
 
   it('delegates info lookup to auth service', async () => {
     authService.getInfo.mockResolvedValue({ payload: { sub: 1 } });
 
-    await expect(controller.info('Bearer token')).resolves.toEqual({ payload: { sub: 1 } });
+    await expect(controller.info('Bearer token')).resolves.toEqual({
+      payload: { sub: 1 },
+    });
   });
 });
