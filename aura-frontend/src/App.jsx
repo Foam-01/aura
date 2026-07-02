@@ -195,10 +195,10 @@ function App() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#090d16] border-b border-slate-800 text-slate-400 font-black text-xs uppercase tracking-wider">
-                      <th className="py-4.5 px-6">ระบบ (System)</th>
-                      <th className="py-4.5 px-6">สถานะ (Status)</th>
-                      <th className="py-4.5 px-6">ชื่อพนักงาน (Name)</th>
-                      <th className="py-4.5 px-6">รหัสผู้ใช้งาน (Username)</th>
+                      <th className="py-4.5 px-6">System</th>
+                      <th className="py-4.5 px-6">Status</th>
+                      <th className="py-4.5 px-6">Name</th>
+                      <th className="py-4.5 px-6">Username</th>
                       <th className="py-4.5 px-6">Authorize</th>
                       <th className="py-4.5 px-6">Role</th>
                       <th className="py-4.5 px-6">Group</th>
