@@ -8,6 +8,8 @@ import { GtPrismaService } from './gt-prisma.service';
 import { IpoPrismaService } from './ipo-prisma.service';
 import { PreconfirmPrismaService } from './preconfirm-prisma.service';
 import { TfexPrismaService } from './tfex-prisma.service';
+import { IconixPrismaService } from './iconix-prisma.service';
+import { SbaPrismaService } from './sba-prisma.service';
 
 @Global()
 @Module({
@@ -20,7 +22,9 @@ import { TfexPrismaService } from './tfex-prisma.service';
     GtPrismaService,
     IpoPrismaService,
     PreconfirmPrismaService,
-    TfexPrismaService
+    TfexPrismaService,
+    IconixPrismaService,
+    SbaPrismaService
   ],
   exports: [
     CentralPrismaService, 
@@ -31,7 +35,9 @@ import { TfexPrismaService } from './tfex-prisma.service';
     GtPrismaService,
     IpoPrismaService,
     PreconfirmPrismaService,
-    TfexPrismaService
+    TfexPrismaService,
+    IconixPrismaService,
+    SbaPrismaService
   ],
 })
 export class PrismaModule {}

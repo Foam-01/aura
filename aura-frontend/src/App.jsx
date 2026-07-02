@@ -8,13 +8,16 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  // 🎯 🟢 เช็ค Format รหัสพนักงาน: ยอมรับเฉพาะตัวเลขล้วน หรืออังกฤษตัวเดียวนำหน้าตามด้วยเลขเท่านั้น
+  //  ปรับปรุงหน้าบ้าน: ขยาย Format ให้ยอมรับรหัสพิเศษของระบบ ICONIX และ SBA (เช่น swss, ac, auth) เพิ่มเติม
   const cleanKey = keyword.trim().toLowerCase();
-  const isFormatValid = /^[a-zA-Z]?\d+$/.test(cleanKey) || cleanKey === "admin";
+  const isFormatValid =
+    /^[a-zA-Z]?\d+$/.test(cleanKey) ||
+    /^[a-zA-Z]{2,4}\d*$/.test(cleanKey) || // ยอมรับอักษรย่อล้วน 2-4 ตัว เช่น swss, ac, auth
+    ["admin", "settle01", "aira-no"].includes(cleanKey);
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    // ดักจับอีกชั้นนึง ถ้ารหัสไม่ถูกต้องตาม Format ไม่ให้ส่งฟอร์มไปหาหลังบ้าน
+
     if (!keyword.trim() || !isFormatValid) return;
 
     setLoading(true);
@@ -78,8 +81,16 @@ function App() {
     return cleanGroup.toUpperCase();
   };
 
-  // 💼 4. ฟังก์ชันดึงค่า Role ยึดตามข้อมูลจริงจาก Backend 
+  // 💼 4. ฟังก์ชันดึงค่า Role ยึดตามข้อมูลจริงจาก Backend (เวอร์ชันอัปเกรดแยกสิทธิ์ตู้ ICONIX ป้องกันลอจิกหลอกตา)
   const getDisplayRole = (item) => {
+    // 🟢 1. ดักจับเคสพิเศษตู้ ICONIX: ให้ดึงชื่อตำแหน่งจริง (เช่น ADMIN, SUP) จาก actualRole มาแสดงตรงตัวทันที
+    if (item.system === "ICONIX" && item.details?.actualRole) {
+      const actual = String(item.details.actualRole).trim();
+      if (!actual || actual === "N/A" || actual === "—") return "—";
+      return actual.toUpperCase() === "ADMIN" ? "Admin" : actual;
+    }
+
+    // 🔵 2. ลอจิกคิวรีสำหรับ 9 ระบบที่เหลือให้ทำงานตามโครงสร้างเดิมของโฟมปกติ
     if (!item.role) return "—";
     let cleanRole = String(item.role).trim();
     if (cleanRole.includes("/")) {
@@ -101,7 +112,7 @@ function App() {
     return cleanRole.charAt(0).toUpperCase() + cleanRole.slice(1);
   };
 
-  // 🎯 คัดกรองผลลัพธ์ดักเอาเฉพาะตัวที่มีข้อมูล (Found) และสถานะต้องเป็น ACTIVE เท่านั้น
+  // 🎯 คืนค่าลอจิกเดิมดั้งเดิมของโฟม: คัดกรองเฉพาะระเบียนที่มีสถานะ ACTIVE เท่านั้น ระบบ 1-9 จะได้ฟื้นคืนชีพขึ้นจอทันที
   const displayResults = results.filter((item) => item.status === "ACTIVE");
 
   const glossaryTags = [
@@ -113,7 +124,7 @@ function App() {
     {
       acronym: "MKT",
       title: "Marketing",
-      desc: "กลุ่มงานเจ้าหน้าที่การตลาด (AE) ดูแลและจัดสรรโควตาสัญญากรรมสิทธิ์พอร์ตจองซื้อหลักทรัพย์ของลูกค้าในความรับผิดชอบ",
+      desc: "กลุ่มงานเจ้าหน้าที่การตลาด (AE) ดูแลและจัดสรรโควตาสัญญกรรมสิทธิ์พอร์ตจองซื้อหลักทรัพย์ของลูกค้าในความรับผิดชอบ",
     },
     {
       acronym: "OPER",
@@ -140,7 +151,7 @@ function App() {
             </h1>
             <p className="text-slate-400 text-sm font-medium leading-relaxed">
               แผงควบคุมตรวจสอบความปลอดภัย (IAM Dashboard)
-              ทำการสืบค้นสถานะระเบียนสิทธิ์การเข้าถึงพนักงานขนานพร้อมกัน 8
+              ทำการสืบค้นสถานะระเบียนสิทธิ์การเข้าถึงพนักงานขนานพร้อมกัน 10
               ฐานข้อมูลหลักในเครือกลุ่มบริษัทหลักทรัพย์ AIRA
             </p>
 
@@ -166,7 +177,7 @@ function App() {
                   type="text"
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="ป้อนรหัสพนักงานคีย์ตรวจสอบ (เช่น 3959, s3966)..."
+                  placeholder="ป้อนรหัสพนักงานคีย์ตรวจสอบ (เช่น 3959, s3966, swss)..."
                   className="w-full bg-transparent py-2.5 text-white placeholder-slate-600 font-bold text-base focus:outline-none"
                 />
               </div>
@@ -174,7 +185,6 @@ function App() {
               {keyword.trim() && (
                 <button
                   type="submit"
-                  
                   disabled={loading || !isFormatValid}
                   className="px-8 py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl shadow-lg transition-all duration-150 min-w-[110px]"
                 >
@@ -188,7 +198,6 @@ function App() {
             </form>
           </div>
 
-          
           {searched && (
             <div className="bg-[#131b2e] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden w-full transition-all duration-300 mb-8">
               <div className="overflow-x-auto">
@@ -226,7 +235,10 @@ function App() {
 
                             <td className="py-4 px-6">
                               <span className="text-slate-200 font-black text-[14px]">
-                                {item.details?.fullName || item.username}
+                                {/* 🟢 ถ้ามี fullName ให้โชว์ชื่อพนักงาน ถ้าไม่มี (เช่น AIRA) ให้ขึ้นขีดว่าง "—" ป้องกันชื่อซ้ำกับ ID รกตา */}
+                                {item.details?.fullName
+                                  ? item.details.fullName
+                                  : "—"}
                               </span>
                             </td>
 
@@ -269,7 +281,6 @@ function App() {
             </div>
           )}
 
-         
           <div className="mt-12 w-full border-t border-slate-800/60 pt-8">
             <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
               <span>📖</span> บัญชีสัญลักษณ์ป้ายกำกับตัวย่อส่วนงานองค์กร (AIRA
