@@ -2,59 +2,53 @@ using System;
 using System.Data.Odbc;
 using System.Text;
 
-class Program
-{
-    static void Main(string[] args)
-    {
-        // บังคับให้ Console ส่งออกเป็น UTF-8 เผื่อกรณีดึงฟิลด์ภาษาไทยในอนาคต
+class Program {
+    static void Main(string[] args) {
+        // 🎯 จุดสำคัญ: บังคับให้โปรแกรม C# ส่งข้อความออกจาก Console เป็น UTF-8 เพียว ๆ
         Console.OutputEncoding = Encoding.UTF8;
 
-        if (args.Length == 0)
-        {
-            Console.WriteLine("[]");
-            return;
+        if (args.Length == 0) { 
+            Console.WriteLine("[]"); 
+            return; 
         }
         string key = args[0];
-        try
-        {
-            // ใช้ท่อเชื่อมต่อตรงเข้า DSN หลักของระบบ
-            using (OdbcConnection conn = new OdbcConnection("DSN=SBA;Uid=airaftp;Pwd=airaftp@aira;"))
-            {
+        try {
+            using (OdbcConnection conn = new OdbcConnection("DSN=SBA;Uid=airaftp;Pwd=airaftp@aira;")) {
                 conn.Open();
                 OdbcCommand cmd = conn.CreateCommand();
+                
+                // 🟢 ใช้คิวรีภาษาไทยแท้ตรงล็อกของโฟม 100%
+                cmd.CommandText = "SELECT userid, usertname, usertsurname, position, divcode, deptcode, adminflag, status FROM refdb@testsmonline:tuser WHERE userid = '" + key + "'";
+                
+                using (OdbcDataReader reader = cmd.ExecuteReader()) {
+                    if (reader.Read()) {
+                        string uid = reader.GetValue(0).ToString().Trim();
+                        string utname = reader.GetValue(1).ToString().Trim();       // ชื่อไทยตรง ๆ
+                        string utsurname = reader.GetValue(2).ToString().Trim();    // นามสกุลไทยตรง ๆ
+                        string pos = reader.GetValue(3).ToString().Trim();
+                        string div = reader.GetValue(4).ToString().Trim();
+                        string dept = reader.GetValue(5).ToString().Trim();
+                        string aflag = reader.GetValue(6).ToString().Trim();
+                        string stat = reader.GetValue(7).ToString().Trim();
 
-                // คิวรีดึงข้อมูลพนักงานจากรหัสที่ส่งเข้ามา
-                cmd.CommandText = "SELECT userid, userename, useresurname, position, divcode, deptcode, adminflag, status FROM tuser WHERE userid = '" + key + "'";
-
-                using (OdbcDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        string rawStatus = reader["status"].ToString().Trim();
-                        // 🎯 ปรับจุดตาย: ดักจับถ้าสถานะใน DB ของ SBA เป็น "A" ให้แปลงคำเป็น "ACTIVE" ให้เท่าเทียมกับระบบ 1-9 ทันที!
-                        string finalStatus = (rawStatus == "A" || rawStatus == "ACTIVE") ? "ACTIVE" : "INACTIVE";
+                        string finalStatus = (stat == "A" || stat == "ACTIVE") ? "ACTIVE" : "INACTIVE";
 
                         Console.WriteLine("[{" +
-                            "\"userid\":\"" + reader["userid"].ToString().Trim() + "\"," +
-                            "\"usertname\":\"" + reader["userename"].ToString().Trim() + "\"," +
-                            "\"usertsurname\":\"" + reader["useresurname"].ToString().Trim() + "\"," +
-                            "\"position\":\"" + reader["position"].ToString().Trim() + "\"," +
-                            "\"divcode\":\"" + reader["divcode"].ToString().Trim() + "\"," +
-                            "\"deptcode\":\"" + reader["deptcode"].ToString().Trim() + "\"," +
-                            "\"adminflag\":\"" + reader["adminflag"].ToString().Trim() + "\"," +
+                            "\"userid\":\"" + uid + "\"," +
+                            "\"usertname\":\"" + utname + "\"," +
+                            "\"usertsurname\":\"" + utsurname + "\"," +
+                            "\"position\":\"" + pos + "\"," +
+                            "\"divcode\":\"" + div + "\"," +
+                            "\"deptcode\":\"" + dept + "\"," +
+                            "\"adminflag\":\"" + aflag + "\"," +
                             "\"status\":\"" + finalStatus + "\"" +
                         "}]");
-                    }
-                    else
-                    {
-                        Console.WriteLine("[]");
+                    } else { 
+                        Console.WriteLine("[]"); 
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // เกิดข้อผิดพลาดใด ๆ ส่งอาเรย์ว่างกลับไปหน้าบ้าน เพื่อไม่ให้แผงวงจรรวมล่ม
+        } catch (Exception ex) {
             Console.WriteLine("[]");
         }
     }
