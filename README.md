@@ -177,10 +177,79 @@ Informix
 
 ```text
 aura/
-
-├── aura-backend/
-├── aura-frontend/
-└── sba-bridge-service/
+├── README.md                                         # Project documentation, architecture overview, and screenshots
+│
+├── sba-bridge-service/                               # Informix Bridge Service (Port 3005)
+│   ├── index.js                                      # Express server entry point handling API requests and executing the bridge
+│   ├── SbaQuery32.exe                                # Compiled 32-bit C# executable for Informix ODBC access
+│   ├── sba.cs                                        # Original C# source for ODBC connectivity and UTF-8 conversion
+│   └── package.json                                  # Bridge service dependencies
+│
+├── aura-backend/                                     # Backend API (NestJS Framework)
+│   ├── .env                                          # Connection strings and environment configuration
+│   ├── prisma/
+│   │   └── schemas/
+│   │       └── schema.prisma                         # Central database schema (Users & Audit Logs)
+│   ├── src/
+│   │   ├── prisma/                                   # Database connection services
+│   │   │   ├── prisma.module.ts                      # Registers and exports Prisma services
+│   │   │   ├── central-prisma.service.ts             # Central Audit database service
+│   │   │   ├── aira-prisma.service.ts                # AIRA database service
+│   │   │   ├── ats-prisma.service.ts                 # ATSRequest database service
+│   │   │   ├── forecast-prisma.service.ts            # Forecast database service
+│   │   │   ├── gt-prisma.service.ts                  # GlobalTrade database service
+│   │   │   ├── ipo-prisma.service.ts                 # IPO Plus database service
+│   │   │   ├── mtc-prisma.service.ts                 # MTC database service
+│   │   │   ├── preconfirm-prisma.service.ts          # PreConfirm database service
+│   │   │   ├── tfex-prisma.service.ts                # TFEX MIS database service
+│   │   │   ├── iconix-prisma.service.ts              # ICONIX database service
+│   │   │   └── ...
+│   │   │
+│   │   ├── modules/
+│   │   │   ├── auth/                                # Authentication and JWT management
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   └── auth.service.ts
+│   │   │   │
+│   │   │   ├── audit-log/                           # Security audit logging module
+│   │   │   │   ├── audit-log.controller.ts
+│   │   │   │   └── audit-log.service.ts
+│   │   │   │
+│   │   │   └── search/                              # Core employee search module
+│   │   │       ├── search.controller.ts
+│   │   │       └── search.service.ts                # Parallel query orchestration across all systems
+│   │   │
+│   │   ├── app.module.ts                            # Root application module
+│   │   └── main.ts                                  # Application bootstrap (Port 3000/3001)
+│   │
+│   └── package.json
+│
+└── aura-frontend/                                   # Frontend Web Application (React + Vite)
+    ├── index.html
+    ├── package.json
+    └── src/
+        ├── App.jsx                                  # Main search interface and unified result dashboard
+        ├── main.jsx                                 # Application entry point and route protection
+        │
+        ├── components/
+        │   ├── Sidebar.jsx                          # Navigation sidebar and user profile panel
+        │   └── UserDetailModal.jsx                  # Employee detail dialog
+        │
+        ├── Pages/
+        │   └── DashboardPage.jsx                    # Dashboard and security audit log page
+        │
+        ├── features/
+        │   └── auth/
+        │       ├── Login.jsx                        # Administrator login page
+        │       └── auth.service.js                  # Authentication API and token management
+        │
+        ├── services/
+        │   └── search.service.js                    # API client for search and audit log requests
+        │
+        ├── constants/
+        │   └── config.js                            # Global API endpoint configuration
+        │
+        └── styles/
+            └── index.css                            # Tailwind CSS and custom application styles
 ```
 
 ---
