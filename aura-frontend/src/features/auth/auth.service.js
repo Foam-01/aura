@@ -32,13 +32,11 @@ export const isAuthenticated = () => Boolean(getStoredToken());
 
 const AuthService = {
   login: async (payload) => {
-    //return await axios.post(`${config.apiPath}/api/user/login`, payload);
-    return await axios.post("http://172.19.111.45:3000/api/user/login", payload);
+    return await axios.post(`${config.apiPath}/api/user/login`, payload);
   },
 
   getUserInfo: async () => {
-    //return await axios.get(`${config.apiPath}/api/user/info`, {
-    return await axios.get("http://172.19.111.45:3000/api/user/info", {
+    return await axios.get(`${config.apiPath}/api/user/info`, {
       headers: getAuthHeaders(),
     });
   },

@@ -3,8 +3,7 @@ import config from '../constants/config';
 import { getAuthHeaders } from '../features/auth/auth.service';
 
 const apiClient = axios.create({
-  //baseURL: config.apiPath,
-  baseURL: 'http://172.19.111.45:3000',
+  baseURL: config.apiPath,
   timeout: 10000,
 });
 
