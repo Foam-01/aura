@@ -137,7 +137,7 @@ export class SearchService {
       sbaQuery.catch((e) => this.handleSystemError('SBA', e, keyword)),
     ]);
 
-    // 🎯 3. โค้ดชุดประวัติศาสตร์: แมปข้อมูลแบบปล่อยให้งอกหลายแถวอิสระตามจำนวนที่คิวรีเจอจริง!
+ 
     
     const airaResult = airaRaw.length > 0 ? airaRaw.map((u) => ({ system: 'AIRA', username: u.Username, role: u.IsAdmin === 1 ? 'ADMIN' : 'USER', status: 'ACTIVE', insight: 'พบชื่อผู้ใช้งานในบัญชีควบคุมระบบหลักสิทธิ์ผู้ดูแลกลาง', details: {} })) : [{ system: 'AIRA', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบประวัติผูกบัญชีในระบบแกนกลางหลัก', details: {} }];
     
@@ -165,7 +165,7 @@ export class SearchService {
     })) : [{ system: 'ICONIX', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: 'ไม่พบบัญชีพนักงานคีย์นี้ผูกระเบียนในระบบพอร์ต ICONIX', details: {} }];
 
     // ระบบที่ 10 SBA จัดการผลลัพธ์แบบ Array Loop จากตัวสะพานตรง ๆ
-    let sbaResult: any[] = []; // 🎯 เติม : any[] กำหนด Type ให้ชัดเจนเพื่อปลดล็อกคอมไพเลอร์
+    let sbaResult: any[] = []; 
     if (!sbaRaw || !Array.isArray(sbaRaw) || sbaRaw.length === 0 || sbaRaw[0]?.error) {
       sbaResult = [{ system: 'SBA', username: keyword, role: 'N/A', status: 'NOT_FOUND', insight: sbaRaw[0]?.error ? `ระบบ SBA ขัดข้อง: ${sbaRaw[0].error}` : 'ไม่พบระเบียนผูกสิทธิ์บัญชีใช้งานของระบบบริหารส่วนงานลูกค้า SBA', details: {} }];
     } else {
@@ -177,7 +177,7 @@ export class SearchService {
 
         return {
           system: 'SBA',
-          username: rawItem.userid || keyword, // โชว์ไอดีจริงตัวที่เจอในเบสของบรรทัดนั้น ๆ (มี s หรือไม่มี s แยกกันชัดเจน!)
+          username: rawItem.userid || keyword, 
           role: String(rawItem.adminflag).trim() === '1' || String(rawItem.adminflag).trim() === 'Y' ? 'ADMIN' : (rawItem.position || 'USER'),
           status: 'ACTIVE',
           insight: 'พบข้อมูลระเบียนรายชื่อพนักงานสายงานบริการในระบบบริหารผู้ถือหุ้น Smart Customer',
@@ -189,7 +189,7 @@ export class SearchService {
       });
     }
 
-    // มัดรวมผลลัพธ์ทั้งหมดทะยานสู่หน้าบ้าน
+   
     const mergedResults = [
       ...airaResult, ...atsResult, ...forecastResult, ...gtResult,
       ...ipoResult, ...mtcResult, ...preconfirmResult, ...tfexResult, ...iconixResult, ...sbaResult,
