@@ -43,12 +43,12 @@ export class SearchService {
       return { status: 'success', count: 0, data: [] };
     }
 
-    // 🎯 1. แตกกิ่งร่างคีย์เวิร์ดเพื่อส่งกระจายกำลังยิง SQL
+    
     const numericKey = searchKey.replace(/\D/g, ''); 
     const staffKeyWithS = searchKey.startsWith('s') ? searchKey : `s${searchKey}`;
     const defaultKey = searchKey;
 
-    // 🎯 2. ปรับปรุง SQL คิวรีขนานระบบ 1-8 ให้เช็กควบทุกร่าง (ถ้าเจอ 2 บัญชีในตู้เดียว มันจะสอยออกมาครบทุกบรรทัด!)
+    
     const airaQuery = this.airaPrisma.$queryRaw<any[]>`
       SELECT Username, IsAdmin FROM [Admin] 
       WHERE CAST(ID AS VARCHAR) = ${defaultKey} 
